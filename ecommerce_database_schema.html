@@ -1,0 +1,189 @@
+
+<style>
+.ew{padding:14px 0}
+.es{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:14px;font-size:12px;color:var(--color-text-secondary)}
+.es b{color:var(--color-text-primary);font-weight:500}
+.en{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+.ep{padding:5px 12px;border-radius:20px;border:1px solid var(--color-border-tertiary);background:transparent;color:var(--color-text-secondary);cursor:pointer;font-size:12px;font-family:var(--font-sans);transition:all .15s;white-space:nowrap}
+.ep.on{color:#fff;border-color:transparent}
+.ep:hover:not(.on){border-color:var(--color-border-secondary);color:var(--color-text-primary)}
+.edl{font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--color-text-tertiary);margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.edl::after{content:'';flex:1;height:1px;background:var(--color-border-tertiary)}
+.eg{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-bottom:24px}
+.ec{border:1px solid var(--color-border-tertiary);border-radius:10px;overflow:hidden;background:var(--color-background-primary)}
+.ech{padding:9px 13px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--color-border-tertiary)}
+.ecn{font-family:var(--font-mono);font-size:13px;font-weight:500;flex:1;color:var(--color-text-primary)}
+.ecc{font-size:11px;color:var(--color-text-tertiary)}
+.ecd{font-size:11px;color:var(--color-text-secondary);padding:5px 13px 6px;border-bottom:1px solid var(--color-border-tertiary);font-style:italic}
+.ect{width:100%;border-collapse:collapse}
+.ect tr{border-top:1px solid var(--color-border-tertiary)}
+.ect td{padding:5px 13px;vertical-align:middle;font-size:12px;line-height:1.4}
+.cn{font-family:var(--font-mono);font-size:11.5px;color:var(--color-text-primary);white-space:nowrap}
+.ct{font-family:var(--font-mono);font-size:10.5px;color:var(--color-text-tertiary);white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis}
+.tg{font-size:9.5px;padding:1px 5px;border-radius:3px;font-weight:600;white-space:nowrap;margin-right:2px;display:inline-block}
+.tPK{background:#EEEDFE;color:#3C3489}
+.tFK{background:#E1F5EE;color:#085041}
+.tUQ{background:#FAEEDA;color:#633806}
+.tNN{background:#F1EFE8;color:#444441}
+@media(prefers-color-scheme:dark){
+.tPK{background:#26215C;color:#CECBF6}
+.tFK{background:#04342C;color:#9FE1CB}
+.tUQ{background:#412402;color:#FAC775}
+.tNN{background:#2C2C2A;color:#D3D1C7}
+}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;display:inline-block}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;font-size:11px;color:var(--color-text-secondary);align-items:center}
+.leg-item{display:flex;align-items:center;gap:4px}
+</style>
+
+<div class="ew">
+<div class="es">
+  <span><b>11</b> domains</span>
+  <span><b>37</b> tables</span>
+  <span><b>~280</b> columns</span>
+</div>
+<div class="legend">
+  <span style="font-weight:500;color:var(--color-text-primary);font-size:11px;margin-right:4px">Constraints:</span>
+  <span class="leg-item"><span class="tg tPK">PK</span> Primary Key</span>
+  <span class="leg-item"><span class="tg tFK">FK</span> Foreign Key</span>
+  <span class="leg-item"><span class="tg tUQ">UQ</span> Unique</span>
+  <span class="leg-item"><span class="tg tNN">NN</span> Not Null</span>
+</div>
+<div class="en" id="nav"></div>
+<div id="main"></div>
+</div>
+
+<script>
+const D=[
+  {id:'users',label:'Users & Auth',clr:'#7F77DD',tables:[
+    {n:'users',d:'Customer accounts',cols:[
+      ['id','BIGINT',['PK']],['mobile','VARCHAR(15)',['UQ','NN']],['email','VARCHAR(255)',['UQ']],['name','VARCHAR(100)',[]],['password_hash','VARCHAR(255)',[]],['profile_pic_url','VARCHAR(512)',[]],['is_verified','BOOLEAN',[]],['is_active','BOOLEAN',[]],['created_at','TIMESTAMP',[]],['updated_at','TIMESTAMP',[]]]},
+    {n:'otp_verifications',d:'OTP tokens for login / register',cols:[
+      ['id','BIGINT',['PK']],['mobile','VARCHAR(15)',['NN']],['otp_code','VARCHAR(6)',['NN']],['purpose','ENUM(register,login,reset)',[]],['is_used','BOOLEAN',[]],['expires_at','TIMESTAMP',['NN']],['created_at','TIMESTAMP',[]]]},
+    {n:'user_addresses',d:'Multiple delivery addresses per user',cols:[
+      ['id','BIGINT',['PK']],['user_id','BIGINT',['FK','NN']],['full_name','VARCHAR(100)',['NN']],['mobile','VARCHAR(15)',['NN']],['address_line1','VARCHAR(255)',['NN']],['address_line2','VARCHAR(255)',[]],['city','VARCHAR(100)',['NN']],['state','VARCHAR(100)',['NN']],['pincode','VARCHAR(10)',['NN']],['address_type','ENUM(home,work,other)',[]],['is_default','BOOLEAN',[]],['created_at','TIMESTAMP',[]]]},
+    {n:'user_preferences',d:'Language & notification settings',cols:[
+      ['id','BIGINT',['PK']],['user_id','BIGINT',['FK','UQ','NN']],['language','VARCHAR(10)',[]],['location','VARCHAR(100)',[]],['push_notifications','BOOLEAN',[]],['email_notifications','BOOLEAN',[]],['sms_notifications','BOOLEAN',[]],['updated_at','TIMESTAMP',[]]]},
+  ]},
+  {id:'products',label:'Products & Catalog',clr:'#1D9E75',tables:[
+    {n:'categories',d:'Hierarchical product categories',cols:[
+      ['id','INT',['PK']],['name','VARCHAR(100)',['NN']],['slug','VARCHAR(120)',['UQ']],['parent_id','INT',['FK']],['image_url','VARCHAR(512)',[]],['sort_order','INT',[]],['is_active','BOOLEAN',[]]]},
+    {n:'brands',d:'Product brands / manufacturers',cols:[
+      ['id','INT',['PK']],['name','VARCHAR(100)',['NN','UQ']],['logo_url','VARCHAR(512)',[]],['is_active','BOOLEAN',[]]]},
+    {n:'products',d:'Core product listings',cols:[
+      ['id','BIGINT',['PK']],['name','VARCHAR(255)',['NN']],['slug','VARCHAR(300)',['UQ']],['description','TEXT',[]],['category_id','INT',['FK','NN']],['brand_id','INT',['FK']],['seller_id','BIGINT',['FK','NN']],['base_price','DECIMAL(10,2)',['NN']],['discount_percent','DECIMAL(5,2)',[]],['stock_qty','INT',[]],['avg_rating','DECIMAL(3,2)',[]],['total_reviews','INT',[]],['delivery_days','INT',[]],['is_active','BOOLEAN',[]],['created_at','TIMESTAMP',[]],['updated_at','TIMESTAMP',[]]]},
+    {n:'product_images',d:'Gallery images per product',cols:[
+      ['id','BIGINT',['PK']],['product_id','BIGINT',['FK','NN']],['image_url','VARCHAR(512)',['NN']],['alt_text','VARCHAR(255)',[]],['sort_order','INT',[]],['is_primary','BOOLEAN',[]]]},
+    {n:'product_specifications',d:'Key-value specs (size, material…)',cols:[
+      ['id','BIGINT',['PK']],['product_id','BIGINT',['FK','NN']],['spec_key','VARCHAR(100)',['NN']],['spec_value','VARCHAR(255)',['NN']],['sort_order','INT',[]]]},
+    {n:'product_variants',d:'Size / color / material variations',cols:[
+      ['id','BIGINT',['PK']],['product_id','BIGINT',['FK','NN']],['size','VARCHAR(50)',[]],['color','VARCHAR(50)',[]],['material','VARCHAR(100)',[]],['sku','VARCHAR(100)',['UQ']],['price_modifier','DECIMAL(10,2)',[]],['stock_qty','INT',[]],['is_active','BOOLEAN',[]]]},
+  ]},
+  {id:'sellers',label:'Sellers',clr:'#0F6E56',tables:[
+    {n:'sellers',d:'Marketplace sellers / vendors',cols:[
+      ['id','BIGINT',['PK']],['store_name','VARCHAR(200)',['NN','UQ']],['email','VARCHAR(255)',['NN','UQ']],['mobile','VARCHAR(15)',['NN']],['gst_number','VARCHAR(20)',[]],['avg_rating','DECIMAL(3,2)',[]],['is_verified','BOOLEAN',[]],['is_active','BOOLEAN',[]],['created_at','TIMESTAMP',[]]]},
+  ]},
+  {id:'search',label:'Search & Discovery',clr:'#378ADD',tables:[
+    {n:'search_history',d:'User search queries log',cols:[
+      ['id','BIGINT',['PK']],['user_id','BIGINT',['FK','NN']],['query','VARCHAR(500)',['NN']],['result_count','INT',[]],['searched_at','TIMESTAMP',[]]]},
+    {n:'recently_viewed',d:'Products viewed per user session',cols:[
+      ['id','BIGINT',['PK']],['user_id','BIGINT',['FK','NN']],['product_id','BIGINT',['FK','NN']],['viewed_at','TIMESTAMP',[]]]},
+    {n:'product_tags',d:'Tags driving smart recommendations',cols:[
+      ['id','INT',['PK']],['product_id','BIGINT',['FK','NN']],['tag','VARCHAR(100)',['NN']]]},
+    {n:'frequently_bought_together',d:'AI-driven product association rules',cols:[
+      ['id','BIGINT',['PK']],['product_id','BIGINT',['FK','NN']],['paired_product_id','BIGINT',['FK','NN']],['frequency_score','DECIMAL(5,4)',[]],['updated_at','TIMESTAMP',[]]]},
+  ]},
+  {id:'cart',label:'Cart & Wishlist',clr:'#BA7517',tables:[
+    {n:'carts',d:'One active cart per user',cols:[
+      ['id','BIGINT',['PK']],['user_id','BIGINT',['FK','UQ','NN']],['created_at','TIMESTAMP',[]],['updated_at','TIMESTAMP',[]]]},
+    {n:'cart_items',d:'Items inside a shopping cart',cols:[
+      ['id','BIGINT',['PK']],['cart_id','BIGINT',['FK','NN']],['product_id','BIGINT',['FK','NN']],['variant_id','BIGINT',['FK']],['quantity','INT',['NN']],['saved_for_later','BOOLEAN',[]],['added_at','TIMESTAMP',[]]]},
+    {n:'wishlists',d:'Named wishlists per user',cols:[
+      ['id','BIGINT',['PK']],['user_id','BIGINT',['FK','NN']],['name','VARCHAR(100)',[]],['created_at','TIMESTAMP',[]]]},
+    {n:'wishlist_items',d:'Products saved to a wishlist',cols:[
+      ['id','BIGINT',['PK']],['wishlist_id','BIGINT',['FK','NN']],['product_id','BIGINT',['FK','NN']],['added_at','TIMESTAMP',[]]]},
+  ]},
+  {id:'orders',label:'Orders & Tracking',clr:'#D85A30',tables:[
+    {n:'orders',d:'Customer placed orders',cols:[
+      ['id','BIGINT',['PK']],['order_number','VARCHAR(20)',['UQ','NN']],['user_id','BIGINT',['FK','NN']],['address_id','BIGINT',['FK','NN']],['coupon_id','BIGINT',['FK']],['subtotal','DECIMAL(10,2)',['NN']],['discount_amount','DECIMAL(10,2)',[]],['delivery_charge','DECIMAL(10,2)',[]],['total_amount','DECIMAL(10,2)',['NN']],['delivery_speed','ENUM(standard,express)',[]],['payment_method','ENUM(upi,card,netbanking,cod)',['NN']],['status','ENUM(placed,packed,shipped,delivered,cancelled)',[]],['notes','TEXT',[]],['created_at','TIMESTAMP',[]],['updated_at','TIMESTAMP',[]]]},
+    {n:'order_items',d:'Products within an order (price snapshot)',cols:[
+      ['id','BIGINT',['PK']],['order_id','BIGINT',['FK','NN']],['product_id','BIGINT',['FK','NN']],['variant_id','BIGINT',['FK']],['product_name','VARCHAR(255)',['NN']],['quantity','INT',['NN']],['unit_price','DECIMAL(10,2)',['NN']],['total_price','DECIMAL(10,2)',['NN']],['seller_id','BIGINT',['FK']]]},
+    {n:'order_tracking',d:'Status history timeline per order',cols:[
+      ['id','BIGINT',['PK']],['order_id','BIGINT',['FK','NN']],['status','ENUM(placed,packed,shipped,out_for_delivery,delivered)',['NN']],['description','VARCHAR(500)',[]],['location','VARCHAR(255)',[]],['updated_at','TIMESTAMP',[]]]},
+    {n:'returns',d:'Return & refund requests',cols:[
+      ['id','BIGINT',['PK']],['order_id','BIGINT',['FK','NN']],['order_item_id','BIGINT',['FK','NN']],['reason','VARCHAR(500)',['NN']],['status','ENUM(requested,approved,rejected,refunded)',[]],['refund_amount','DECIMAL(10,2)',[]],['refund_method','ENUM(original,wallet,upi)',[]],['created_at','TIMESTAMP',[]],['resolved_at','TIMESTAMP',[]]]},
+  ]},
+  {id:'payments',label:'Payments',clr:'#3B8BD4',tables:[
+    {n:'payments',d:'Payment gateway transactions',cols:[
+      ['id','BIGINT',['PK']],['order_id','BIGINT',['FK','NN']],['user_id','BIGINT',['FK','NN']],['method','ENUM(upi,debit_card,credit_card,netbanking,cod)',['NN']],['provider','VARCHAR(50)',[]],['transaction_id','VARCHAR(255)',['UQ']],['amount','DECIMAL(10,2)',['NN']],['currency','VARCHAR(3)',[]],['status','ENUM(pending,success,failed,refunded)',[]],['gateway_response','JSON',[]],['created_at','TIMESTAMP',[]],['updated_at','TIMESTAMP',[]]]},
+  ]},
+  {id:'coupons',label:'Coupons & Rewards',clr:'#EF9F27',tables:[
+    {n:'coupons',d:'Discount coupon definitions',cols:[
+      ['id','BIGINT',['PK']],['code','VARCHAR(50)',['UQ','NN']],['description','VARCHAR(255)',[]],['discount_type','ENUM(percent,flat)',['NN']],['discount_value','DECIMAL(10,2)',['NN']],['max_discount','DECIMAL(10,2)',[]],['min_order_value','DECIMAL(10,2)',[]],['max_uses','INT',[]],['used_count','INT',[]],['per_user_limit','INT',[]],['valid_from','TIMESTAMP',[]],['valid_until','TIMESTAMP',[]],['is_active','BOOLEAN',[]]]},
+    {n:'coupon_usage',d:'Tracks who used which coupon',cols:[
+      ['id','BIGINT',['PK']],['coupon_id','BIGINT',['FK','NN']],['user_id','BIGINT',['FK','NN']],['order_id','BIGINT',['FK','NN']],['discount_applied','DECIMAL(10,2)',['NN']],['used_at','TIMESTAMP',[]]]},
+    {n:'loyalty_points',d:'Earn / burn points ledger',cols:[
+      ['id','BIGINT',['PK']],['user_id','BIGINT',['FK','NN']],['points','INT',['NN']],['transaction_type','ENUM(earn,burn,expire,refund)',['NN']],['order_id','BIGINT',['FK']],['description','VARCHAR(255)',[]],['created_at','TIMESTAMP',[]]]},
+    {n:'referrals',d:'Referral program tracking',cols:[
+      ['id','BIGINT',['PK']],['referrer_id','BIGINT',['FK','NN']],['referee_id','BIGINT',['FK','NN']],['referral_code','VARCHAR(20)',['NN']],['reward_points','INT',[]],['status','ENUM(pending,rewarded,expired)',[]],['created_at','TIMESTAMP',[]]]},
+  ]},
+  {id:'reviews',label:'Reviews & Q&A',clr:'#534AB7',tables:[
+    {n:'reviews',d:'Product star ratings & written reviews',cols:[
+      ['id','BIGINT',['PK']],['product_id','BIGINT',['FK','NN']],['user_id','BIGINT',['FK','NN']],['order_id','BIGINT',['FK']],['rating','TINYINT(1-5)',['NN']],['title','VARCHAR(255)',[]],['body','TEXT',[]],['is_verified_purchase','BOOLEAN',[]],['helpful_count','INT',[]],['not_helpful_count','INT',[]],['is_approved','BOOLEAN',[]],['created_at','TIMESTAMP',[]]]},
+    {n:'review_media',d:'Photos & videos attached to reviews',cols:[
+      ['id','BIGINT',['PK']],['review_id','BIGINT',['FK','NN']],['media_url','VARCHAR(512)',['NN']],['media_type','ENUM(image,video)',[]],['sort_order','INT',[]]]},
+    {n:'review_votes',d:'Helpful / not helpful votes',cols:[
+      ['id','BIGINT',['PK']],['review_id','BIGINT',['FK','NN']],['user_id','BIGINT',['FK','NN']],['is_helpful','BOOLEAN',['NN']],['created_at','TIMESTAMP',[]]]},
+    {n:'product_questions',d:'Customer Q&A on product page',cols:[
+      ['id','BIGINT',['PK']],['product_id','BIGINT',['FK','NN']],['user_id','BIGINT',['FK','NN']],['question','TEXT',['NN']],['is_approved','BOOLEAN',[]],['created_at','TIMESTAMP',[]]]},
+    {n:'product_answers',d:'Answers to product questions',cols:[
+      ['id','BIGINT',['PK']],['question_id','BIGINT',['FK','NN']],['user_id','BIGINT',['FK','NN']],['answer','TEXT',['NN']],['is_seller_answer','BOOLEAN',[]],['is_approved','BOOLEAN',[]],['created_at','TIMESTAMP',[]]]},
+  ]},
+  {id:'notifications',label:'Notifications',clr:'#5F5E5A',tables:[
+    {n:'notifications',d:'User notification inbox',cols:[
+      ['id','BIGINT',['PK']],['user_id','BIGINT',['FK','NN']],['type','ENUM(order,offer,price_drop,cart_reminder,system)',['NN']],['title','VARCHAR(255)',['NN']],['body','TEXT',[]],['action_url','VARCHAR(512)',[]],['is_read','BOOLEAN',[]],['channel','ENUM(push,sms,email,in_app)',[]],['created_at','TIMESTAMP',[]]]},
+    {n:'price_alerts',d:'Price drop alert subscriptions',cols:[
+      ['id','BIGINT',['PK']],['user_id','BIGINT',['FK','NN']],['product_id','BIGINT',['FK','NN']],['target_price','DECIMAL(10,2)',['NN']],['is_active','BOOLEAN',[]],['created_at','TIMESTAMP',[]]]},
+  ]},
+  {id:'support',label:'Support',clr:'#993556',tables:[
+    {n:'support_tickets',d:'Customer support requests',cols:[
+      ['id','BIGINT',['PK']],['ticket_number','VARCHAR(20)',['UQ','NN']],['user_id','BIGINT',['FK','NN']],['order_id','BIGINT',['FK']],['subject','VARCHAR(255)',['NN']],['category','ENUM(order,payment,return,account,other)',[]],['priority','ENUM(low,medium,high,urgent)',[]],['status','ENUM(open,in_progress,resolved,closed)',[]],['created_at','TIMESTAMP',[]],['resolved_at','TIMESTAMP',[]]]},
+    {n:'support_messages',d:'Conversation thread per ticket',cols:[
+      ['id','BIGINT',['PK']],['ticket_id','BIGINT',['FK','NN']],['sender_id','BIGINT',['NN']],['sender_type','ENUM(user,agent,bot)',['NN']],['message','TEXT',['NN']],['attachment_url','VARCHAR(512)',[]],['created_at','TIMESTAMP',[]]]},
+  ]},
+];
+
+function card(t,clr){
+  const rows=t.cols.map(([n,tp,tags])=>{
+    const tgs=tags.map(tag=>`<span class="tg t${tag}">${tag}</span>`).join('');
+    return `<tr><td class="cn">${n}</td><td class="ct" title="${tp}">${tp}</td><td>${tgs}</td></tr>`;
+  }).join('');
+  return `<div class="ec"><div class="ech"><span class="dot" style="background:${clr}"></span><span class="ecn">${t.n}</span><span class="ecc">${t.cols.length} cols</span></div><div class="ecd">${t.d}</div><table class="ect">${rows}</table></div>`;
+}
+
+function render(){
+  const nav=document.getElementById('nav');
+  nav.innerHTML=`<button class="ep on" style="background:#444441" data-id="all" onclick="filterD('all')">All Tables</button>`
+    +D.map(d=>`<button class="ep" data-id="${d.id}" onclick="filterD('${d.id}')">${d.label}</button>`).join('');
+
+  const main=document.getElementById('main');
+  main.innerHTML=D.map(d=>{
+    const cards=d.tables.map(t=>card(t,d.clr)).join('');
+    return `<div class="ed" data-id="${d.id}"><div class="edl"><span style="color:${d.clr};font-weight:600">${d.label}</span><span style="font-size:11px;color:var(--color-text-tertiary);font-weight:400;margin-left:4px">${d.tables.length} tables</span></div><div class="eg">${cards}</div></div>`;
+  }).join('');
+}
+
+function filterD(id){
+  document.querySelectorAll('.ep').forEach(p=>{
+    const on=p.dataset.id===id;
+    p.classList.toggle('on',on);
+    if(on){const dom=D.find(d=>d.id===id);p.style.background=dom?dom.clr:'#444441';}
+    else p.style.background='';
+  });
+  document.querySelectorAll('.ed').forEach(el=>{
+    el.style.display=(id==='all'||el.dataset.id===id)?'':'none';
+  });
+}
+
+render();
+</script>
